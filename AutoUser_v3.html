@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="fr" class="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AutoUser — Tests visuels</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+:root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;background:#0b1120;color:#e5edf8;font-family:Inter,ui-sans-serif,system-ui,-apple-system,sans-serif}
+.panel{background:#121d30;border:1px solid #26364e;border-radius:18px}.muted{color:#91a2bb}
+.field{width:100%;background:#0b1424;border:1px solid #34445d;border-radius:10px;padding:10px 12px;color:#f8fafc;outline:none}
+.field:focus{border-color:#60a5fa;box-shadow:0 0 0 3px #3b82f633}
+.btn{border:1px solid #34445d;border-radius:10px;padding:9px 13px;font-size:13px;font-weight:650;transition:.15s}
+.btn:hover{filter:brightness(1.15)}.primary{background:#2563eb;border-color:#2563eb;color:white}.success{background:#047857;border-color:#047857;color:white}.danger{color:#fda4af;border-color:#713044;background:#351827}
+.nav.active{background:#1d3557;color:#93c5fd;border-color:#315b91}
+.step-card{background:#0d1728;border:1px solid #2a3b54;border-radius:14px;padding:14px}
+.pill{font-size:11px;border-radius:999px;padding:4px 8px;background:#1c2b42;color:#a9c5e9}
+.hidden{display:none!important}
+#toast{transition:opacity .2s,transform .2s}
+</style>
+</head>
+<body class="min-h-screen">
+<header class="sticky top-0 z-30 border-b border-slate-700/70 bg-[#101a2b]/95 backdrop-blur">
+ <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+  <div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-cyan-400 grid place-items-center"><i data-lucide="bot"></i></div><div><div class="font-black tracking-wide text-lg">Auto<span class="text-blue-400">User</span> <span class="pill">v2.0</span></div><div class="text-xs muted">Atelier de scénarios de test</div></div></div>
+  <div class="text-xs muted hidden sm:block">Mode local · données conservées sur cet appareil</div>
+ </div>
+ <nav class="max-w-7xl mx-auto px-3 pb-3 flex gap-2 overflow-x-auto">
+  <button class="btn nav active" data-tab="dashboard"><i data-lucide="layout-dashboard" class="inline w-4 h-4 mr-1"></i>Tableau de bord</button>
+  <button class="btn nav" data-tab="scenarios"><i data-lucide="workflow" class="inline w-4 h-4 mr-1"></i>Scénarios</button>
+  <button class="btn nav" data-tab="profiles"><i data-lucide="users" class="inline w-4 h-4 mr-1"></i>Profils</button>
+  <button class="btn nav" data-tab="runner"><i data-lucide="play-circle" class="inline w-4 h-4 mr-1"></i>Exécuteur</button>
+ </nav>
+</header>
+<main class="max-w-7xl mx-auto p-4 sm:p-6 space-y-5">
+ <section id="tab-dashboard" class="tab space-y-5">
+  <div><h1 class="text-2xl font-bold">Tableau de bord</h1><p class="muted text-sm mt-1">Retrouve tes scénarios, profils et résultats récents.</p></div>
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+   <div class="panel p-4"><div class="muted text-xs">Scénarios</div><div id="stat-scenarios" class="text-3xl font-bold mt-1">0</div></div>
+   <div class="panel p-4"><div class="muted text-xs">Profils</div><div id="stat-profiles" class="text-3xl font-bold mt-1">0</div></div>
+   <div class="panel p-4"><div class="muted text-xs">Tests lancés</div><div id="stat-runs" class="text-3xl font-bold mt-1">0</div></div>
+   <div class="panel p-4"><div class="muted text-xs">Taux de réussite</div><div id="stat-success" class="text-3xl font-bold mt-1">—</div></div>
+  </div>
+  <div class="panel p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4"><div><h2 class="font-bold">Prêt à créer un test ?</h2><p class="muted text-sm mt-1">Construis tes étapes avec des menus, sans écrire de code d’action.</p></div><button class="btn primary" id="quick-create">＋ Nouveau scénario</button></div>
+  <div class="panel p-5"><h2 class="font-bold mb-3">Activité récente</h2><div id="activity" class="space-y-2 text-sm muted">Aucun test exécuté pour le moment.</div></div>
+ </section>
+
+ <section id="tab-scenarios" class="tab hidden space-y-5">
+  <div class="flex flex-wrap justify-between items-center gap-3"><div><h1 class="text-2xl font-bold">Scénarios</h1><p class="muted text-sm mt-1">Chaque scénario est une suite d’étapes configurables.</p></div><button id="new-scenario" class="btn primary">＋ Créer un scénario</button></div>
+  <div id="scenario-list" class="grid sm:grid-cols-2 xl:grid-cols-3 gap-3"></div>
+ </section>
+
+ <section id="tab-profiles" class="tab hidden space-y-5">
+  <div class="flex flex-wrap justify-between items-center gap-3"><div><h1 class="text-2xl font-bold">Profils de test</h1><p class="muted text-sm mt-1">Utilise des données fictives dans tes environnements de test.</p></div><button id="new-profile" class="btn primary">＋ Ajouter un profil</button></div>
+  <div class="panel p-4 text-sm text-amber-200/90">Conseil : utilise uniquement des identités et adresses fictives, jamais les données personnelles d’une vraie personne.</div>
+  <div id="profile-list" class="grid sm:grid-cols-2 xl:grid-cols-3 gap-3"></div>
+ </section>
+
+ <section id="tab-runner" class="tab hidden space-y-5">
+  <div><h1 class="text-2xl font-bold">Exécuteur de tests</h1><p class="muted text-sm mt-1">Cette version exécute les scénarios dans sa sandbox intégrée, pas sur des sites externes.</p></div>
+  <div class="panel p-4 flex flex-col md:flex-row gap-3 md:items-end">
+   <label class="flex-1 text-xs muted">Scénario<select id="run-scenario" class="field mt-1"></select></label>
+   <label class="flex-1 text-xs muted">Profil<select id="run-profile" class="field mt-1"></select></label>
+   <label class="flex-1 text-xs muted">Cible du test<select id="run-target" class="field mt-1"><option value="demo">Démo intégrée</option><option value="html">Mon HTML importé</option></select></label>
+   <button id="run-button" class="btn success">▶ Lancer le test</button><button id="stop-button" class="btn danger" disabled>■ Arrêter</button>
+  </div>
+  <div class="panel p-4 space-y-3">
+   <div><h2 class="font-bold">Tester mon propre HTML</h2><p class="muted text-xs mt-1">Importe un fichier HTML. AutoUser repère les boutons, champs, liens et autres éléments interactifs.</p></div>
+   <div class="flex flex-wrap gap-2"><input id="html-file" type="file" accept=".html,.htm,text/html" class="field flex-1 min-w-0"><button id="clear-html" class="btn">Retirer le fichier</button></div>
+   <div id="html-status" class="muted text-xs">Aucun fichier importé.</div>
+   <div id="detector-area" class="hidden space-y-2"><div class="flex justify-between"><b class="text-sm">Éléments détectés</b><span id="detector-count" class="pill">0 élément</span></div><div id="detected-elements" class="grid sm:grid-cols-2 gap-2 max-h-56 overflow-auto"></div></div>
+  </div>
+  <div class="grid lg:grid-cols-5 gap-4">
+   <div class="panel lg:col-span-3 overflow-hidden">
+    <div class="px-4 py-3 border-b border-slate-700 flex justify-between"><b id="preview-title" class="text-sm">Application de démonstration</b><span class="pill">Sandbox isolée</span></div>
+    <div id="demo-preview" class="p-5 sm:p-8 min-h-72">
+     <form id="demo-form" class="max-w-md mx-auto panel p-5 space-y-4">
+      <div><h3 class="font-bold text-blue-300">Formulaire de démonstration</h3><p class="muted text-xs mt-1">Les étapes configurées peuvent remplir et vérifier ces champs.</p></div>
+      <label class="block text-xs muted">Nom complet<input id="demo-name" class="field mt-1" autocomplete="off"></label>
+      <label class="block text-xs muted">Adresse e-mail<input id="demo-email" type="email" class="field mt-1" autocomplete="off"></label>
+      <button id="demo-submit" type="button" class="btn primary w-full">Soumettre le formulaire</button>
+      <div id="demo-success" class="hidden rounded-lg bg-emerald-950 text-emerald-300 p-3 text-sm">Formulaire soumis dans la sandbox.</div>
+     </form>
+    </div>
+   </div>
+   <div class="panel lg:col-span-2 p-4 min-h-72"><div class="flex justify-between items-center mb-3"><b class="text-sm">Journal d’exécution</b><button id="clear-logs" class="text-xs muted">Effacer</button></div><div id="logs" class="space-y-2 text-xs font-mono muted"><p>En attente d’un test…</p></div></div>
+  </div>
+ </section>
+</main>
+
+<!-- Scenario editor -->
+<div id="scenario-modal" class="hidden fixed inset-0 z-50 bg-black/70 p-3 sm:p-6 overflow-y-auto">
+ <div class="max-w-3xl mx-auto panel p-4 sm:p-6 my-4">
+  <div class="flex justify-between gap-3 items-start"><div><h2 id="scenario-modal-title" class="text-xl font-bold">Nouveau scénario</h2><p class="muted text-xs mt-1">Configure chaque étape grâce aux champs ci-dessous.</p></div><button class="btn" id="close-scenario">✕</button></div>
+  <form id="scenario-form" class="space-y-4 mt-5">
+   <input type="hidden" id="scenario-id">
+   <label class="block text-xs muted">Nom du scénario<input id="scenario-title" class="field mt-1" required maxlength="80" placeholder="Ex. Inscription réussie"></label>
+   <div class="flex justify-between items-center"><div><h3 class="font-semibold">Étapes du scénario</h3><p class="muted text-xs">Choisis une action, puis renseigne ses paramètres.</p></div><button type="button" id="add-step" class="btn">＋ Ajouter une étape</button></div>
+   <div id="step-editor" class="space-y-3"></div>
+   <div class="flex flex-wrap justify-end gap-2 pt-2"><button type="button" id="cancel-scenario" class="btn">Annuler</button><button class="btn primary" type="submit">Enregistrer le scénario</button></div>
+  </form>
+ </div>
+</div>
+
+<!-- Profile editor -->
+<div id="profile-modal" class="hidden fixed inset-0 z-50 bg-black/70 p-3 sm:p-6 overflow-y-auto">
+ <div class="max-w-lg mx-auto panel p-5 my-8">
+  <div class="flex justify-between"><h2 id="profile-modal-title" class="text-xl font-bold">Nouveau profil</h2><button id="close-profile" class="btn">✕</button></div>
+  <form id="profile-form" class="space-y-3 mt-5"><input id="profile-id" type="hidden">
+   <label class="block text-xs muted">Nom fictif<input id="profile-name" class="field mt-1" required maxlength="80"></label>
+   <label class="block text-xs muted">E-mail de test<input id="profile-email" type="email" class="field mt-1" required maxlength="120" placeholder="test@example.invalid"></label>
+   <label class="block text-xs muted">Vitesse de saisie<input id="profile-speed" type="number" min="0" max="500" value="25" class="field mt-1"><span class="text-[11px]">Délai entre les caractères en millisecondes (0 = instantané).</span></label>
+   <div class="flex justify-end gap-2 pt-2"><button type="button" id="cancel-profile" class="btn">Annuler</button><button class="btn primary">Enregistrer</button></div>
+  </form>
+ </div>
+</div>
+<div id="toast" class="fixed bottom-4 left-1/2 -translate-x-1/2 translate-y-4 opacity-0 z-[70] bg-blue-600 text-white rounded-xl px-4 py-3 text-sm shadow-xl"></div>
+
+<script>
+const $=id=>document.getElementById(id);
+const defaultScenarios=[{id:'s1',title:'Inscription de démonstration',steps:[
+ {action:'type',target:'#demo-name',value:'{name}'},
+ {action:'type',target:'#demo-email',value:'{email}'},
+ {action:'click',target:'#demo-submit'}
+]}];
+let scenarios=load('autouser_scenarios',defaultScenarios);
+let profiles=load('autouser_profiles',[{id:'p1',name:'Alexandre Dubois',email:'alexandre@example.invalid',speed:20}]);
+let runs=Number(localStorage.getItem('autouser_runs')||0);
+let results=load('autouser_results',[]);
+let stopRequested=false,isRunning=false,toastTimer;
+function load(key,fallback){try{const v=JSON.parse(localStorage.getItem(key));return Array.isArray(v)?v:fallback}catch{return fallback}}
+function persist(){localStorage.setItem('autouser_scenarios',JSON.stringify(scenarios));localStorage.setItem('autouser_profiles',JSON.stringify(profiles));localStorage.setItem('autouser_runs',String(runs));localStorage.setItem('autouser_results',JSON.stringify(results.slice(0,30)))}
+function uid(prefix){return prefix+'_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,6)}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function toast(msg){$('toast').textContent=msg;$('toast').classList.remove('opacity-0','translate-y-4');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').classList.add('opacity-0','translate-y-4'),2300)}
+function tab(name){document.querySelectorAll('.tab').forEach(x=>x.classList.add('hidden'));$('tab-'+name).classList.remove('hidden');document.querySelectorAll('.nav').forEach(x=>x.classList.toggle('active',x.dataset.tab===name));render()}
+document.querySelectorAll('.nav').forEach(b=>b.addEventListener('click',()=>tab(b.dataset.tab)));
+function render(){
+ $('stat-scenarios').textContent=scenarios.length;$('stat-profiles').textContent=profiles.length;$('stat-runs').textContent=runs;
+ const passed=results.filter(r=>r.ok).length;$('stat-success').textContent=results.length?Math.round(passed/results.length*100)+'%':'—';
+ $('scenario-list').innerHTML=scenarios.map(s=>`<article class="panel p-4 flex flex-col gap-4"><div class="flex justify-between gap-2"><span class="pill">${s.steps.length} étape(s)</span><span class="text-xs muted">Scénario</span></div><div><h3 class="font-bold">${esc(s.title)}</h3><p class="muted text-xs mt-1">${s.steps.map(x=>actionLabel(x.action)).join(' · ')||'Aucune étape'}</p></div><div class="flex gap-2 mt-auto"><button class="btn flex-1" data-edit-s="${esc(s.id)}">Modifier</button><button class="btn" data-run-s="${esc(s.id)}">Tester</button><button class="btn danger" data-del-s="${esc(s.id)}">Supprimer</button></div></article>`).join('')||'<div class="panel p-5 muted text-sm">Aucun scénario. Crée ton premier scénario.</div>';
+ $('profile-list').innerHTML=profiles.map(p=>`<article class="panel p-4 flex justify-between items-center gap-3"><div class="min-w-0"><div class="font-semibold">${esc(p.name)}</div><div class="muted text-xs break-all">${esc(p.email)}</div><div class="muted text-xs mt-1">Vitesse : ${Number(p.speed)||0} ms</div></div><div class="flex gap-2"><button class="btn" data-edit-p="${esc(p.id)}">Modifier</button><button class="btn danger" data-del-p="${esc(p.id)}">Supprimer</button></div></article>`).join('')||'<div class="panel p-5 muted text-sm">Aucun profil enregistré.</div>';
+ fillSelects();
+ $('activity').innerHTML=results.slice(0,5).map(r=>`<div class="flex justify-between gap-3 border-b border-slate-700/60 pb-2"><span>${r.ok?'✓':'✕'} ${esc(r.title)}</span><span class="${r.ok?'text-emerald-400':'text-rose-300'}">${r.ok?'Réussi':'Échec'}</span></div>`).join('')||'Aucun test exécuté pour le moment.';
+ document.querySelectorAll('[data-edit-s]').forEach(b=>b.onclick=()=>editScenario(b.dataset.editS));
+ document.querySelectorAll('[data-del-s]').forEach(b=>b.onclick=()=>removeScenario(b.dataset.delS));
+ document.querySelectorAll('[data-run-s]').forEach(b=>b.onclick=()=>{tab('runner');$('run-scenario').value=b.dataset.runS});
+ document.querySelectorAll('[data-edit-p]').forEach(b=>b.onclick=()=>editProfile(b.dataset.editP));
+ document.querySelectorAll('[data-del-p]').forEach(b=>b.onclick=()=>removeProfile(b.dataset.delP));
+}
+function fillSelects(){const ss=$('run-scenario'),pp=$('run-profile'),oldS=ss.value,oldP=pp.value;ss.innerHTML=scenarios.map(s=>`<option value="${esc(s.id)}">${esc(s.title)}</option>`).join('');pp.innerHTML=profiles.map(p=>`<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('');if(scenarios.some(s=>s.id===oldS))ss.value=oldS;if(profiles.some(p=>p.id===oldP))pp.value=oldP}
+function actionLabel(a){return ({type:'Écrire du texte',click:'Cliquer',wait:'Attendre',check:'Vérifier un champ'})[a]||'Action inconnue'}
+function openScenario(s=null){$('scenario-modal').classList.remove('hidden');$('scenario-id').value=s?.id||'';$('scenario-title').value=s?.title||'';$('scenario-modal-title').textContent=s?'Modifier le scénario':'Nouveau scénario';$('step-editor').innerHTML='';(s?.steps?.length?s.steps:[{action:'type',target:'#demo-name',value:'{name}'}]).forEach(addStep)}
+function closeScenario(){$('scenario-modal').classList.add('hidden')}
+function editScenario(id){const s=scenarios.find(x=>x.id===id);if(s)openScenario(s)}
+function addStep(step={action:'click',target:'#demo-submit'}){const wrap=document.createElement('div');wrap.className='step-card space-y-3';wrap.innerHTML=`<div class="flex justify-between items-center"><b class="text-sm step-number">Étape</b><div class="flex gap-1"><button type="button" class="btn move-up" title="Monter">↑</button><button type="button" class="btn move-down" title="Descendre">↓</button><button type="button" class="btn danger remove-step">Supprimer</button></div></div><label class="block text-xs muted">Action<select class="field step-action mt-1"><option value="type">Écrire du texte</option><option value="click">Cliquer</option><option value="wait">Attendre</option><option value="check">Vérifier un champ</option></select></label><div class="step-fields grid sm:grid-cols-2 gap-3"></div>`;
+ const sel=wrap.querySelector('.step-action');sel.value=step.action||'click';sel.addEventListener('change',()=>updateStepFields(wrap,{}));updateStepFields(wrap,step);
+ wrap.querySelector('.remove-step').onclick=()=>{wrap.remove();renumberSteps()};wrap.querySelector('.move-up').onclick=()=>{if(wrap.previousElementSibling)wrap.parentNode.insertBefore(wrap,wrap.previousElementSibling);renumberSteps()};wrap.querySelector('.move-down').onclick=()=>{if(wrap.nextElementSibling)wrap.parentNode.insertBefore(wrap.nextElementSibling,wrap);renumberSteps()};
+ $('step-editor').append(wrap);renumberSteps()}
+function targetOptions(){return [...demoTargets(),...detected].map(x=>`<option value="${esc(x.selector)}">${esc(x.label)}</option>`).join('')}
+function demoTargets(){return [{selector:'#demo-name',label:'Nom complet (démo)'},{selector:'#demo-email',label:'E-mail (démo)'},{selector:'#demo-submit',label:'Soumettre (démo)'}]}
+function updateStepFields(card,step){const a=card.querySelector('.step-action').value,box=card.querySelector('.step-fields');let target=step.target||'#demo-name',value=step.value||'',ms=step.ms??1000;
+ if(a==='wait'){box.innerHTML=`<label class="text-xs muted">Durée (millisecondes)<input class="field mt-1 step-ms" type="number" min="0" max="30000" value="${Number(ms)}"></label><p class="muted text-xs self-center">Le test attend avant de passer à l’étape suivante.</p>`;return}
+ box.innerHTML=`<label class="text-xs muted">Élément à cibler<input class="field mt-1 step-target" list="detected-target-options" value="${esc(target)}" placeholder="#identifiant ou sélecteur CSS"><datalist id="detected-target-options">${targetOptions()}</datalist><span class="text-[11px]">Choisis un élément détecté ou saisis un sélecteur CSS.</span></label>${a==='type'?`<label class="text-xs muted">Texte à saisir<input class="field mt-1 step-value" value="${esc(value)}" placeholder="{name} ou texte libre"><span class="text-[11px]">Variables disponibles : {name} et {email}</span></label>`:a==='check'?`<label class="text-xs muted">Valeur attendue<input class="field mt-1 step-value" value="${esc(value)}" placeholder="{email} ou texte attendu"></label>`:'<p class="muted text-xs self-center">Le clic sera effectué sur l’élément sélectionné.</p>'}`;
+ card.querySelector('.step-target').value=target; }
+function renumberSteps(){[...$('step-editor').children].forEach((c,i)=>c.querySelector('.step-number').textContent=`Étape ${i+1}`)}
+$('add-step').onclick=()=>addStep();
+$('scenario-form').onsubmit=e=>{e.preventDefault();const steps=[...$('step-editor').children].map(c=>{const action=c.querySelector('.step-action').value;if(action==='wait')return{action,ms:Math.max(0,Math.min(30000,Number(c.querySelector('.step-ms').value)||0))};return{action,target:c.querySelector('.step-target').value,...(action==='type'||action==='check'?{value:c.querySelector('.step-value').value}:{})}});
+ const id=$('scenario-id').value||uid('s'),obj={id,title:$('scenario-title').value.trim(),steps};if(!obj.title){toast('Donne un nom au scénario.');return}const i=scenarios.findIndex(s=>s.id===id);if(i>=0)scenarios[i]=obj;else scenarios.push(obj);persist();closeScenario();render();toast('Scénario enregistré.');};
+function removeScenario(id){if(!confirm('Supprimer ce scénario ?'))return;scenarios=scenarios.filter(s=>s.id!==id);persist();render();toast('Scénario supprimé.')}
+function openProfile(p=null){$('profile-modal').classList.remove('hidden');$('profile-id').value=p?.id||'';$('profile-modal-title').textContent=p?'Modifier le profil':'Nouveau profil';$('profile-name').value=p?.name||'';$('profile-email').value=p?.email||'';$('profile-speed').value=p?.speed??25}
+function editProfile(id){const p=profiles.find(x=>x.id===id);if(p)openProfile(p)}
+$('profile-form').onsubmit=e=>{e.preventDefault();const id=$('profile-id').value||uid('p'),p={id,name:$('profile-name').value.trim(),email:$('profile-email').value.trim(),speed:Math.max(0,Math.min(500,Number($('profile-speed').value)||0))};const i=profiles.findIndex(x=>x.id===id);if(i>=0)profiles[i]=p;else profiles.push(p);persist();$('profile-modal').classList.add('hidden');render();toast('Profil enregistré.')};
+function removeProfile(id){if(!confirm('Supprimer ce profil ?'))return;profiles=profiles.filter(p=>p.id!==id);persist();render();toast('Profil supprimé.')}
+$('new-scenario').onclick=$('quick-create').onclick=()=>openScenario();$('new-profile').onclick=()=>openProfile();
+$('close-scenario').onclick=$('cancel-scenario').onclick=closeScenario;$('close-profile').onclick=$('cancel-profile').onclick=()=>$('profile-modal').classList.add('hidden');
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+function log(msg,kind='info'){const p=document.createElement('p');p.textContent=(kind==='ok'?'✓ ':kind==='bad'?'✕ ':'› ')+msg;p.className=kind==='ok'?'text-emerald-400':kind==='bad'?'text-rose-300':'text-slate-300';$('logs').append(p);$('logs').scrollTop=$('logs').scrollHeight}
+function resolveValue(v,p){return String(v??'').replaceAll('{name}',p.name).replaceAll('{email}',p.email)}
+
+let importedHtml='',detected=[],activeTarget='demo',bridgeSeq=0,bridgeWaiters=new Map();
+function bootstrapScript(){return `<script>
+(()=>{const label=e=>String(e.getAttribute('aria-label')||e.innerText||e.value||e.getAttribute('placeholder')||e.getAttribute('title')||e.name||e.id||e.tagName.toLowerCase()).trim().replace(/\\s+/g,' ').slice(0,90);
+const selector=e=>{if(e.id)return '#'+CSS.escape(e.id);if(e.name){const q=e.tagName.toLowerCase()+'[name="'+CSS.escape(e.name)+'"]';if(document.querySelectorAll(q).length===1)return q}let path=[],n=e;while(n&&n.nodeType===1&&n!==document.body){let part=n.tagName.toLowerCase();if(n.parentElement){let a=[...n.parentElement.children].filter(x=>x.tagName===n.tagName);if(a.length>1)part+=':nth-of-type('+(a.indexOf(n)+1)+')'}path.unshift(part);n=n.parentElement}return path.join(' > ')};
+const scan=()=>{const els=[...document.querySelectorAll('button,input,select,textarea,a[href],[role="button"],[role="link"],[tabindex]:not([tabindex="-1"]),[contenteditable="true"]')].filter(e=>!e.disabled&&e.type!=='hidden');parent.postMessage({type:'autouser-detected',items:els.map(e=>({selector:selector(e),tag:e.tagName.toLowerCase(),label:label(e)}))},'*')};
+const reply=(id,ok,message)=>parent.postMessage({type:'autouser-result',id,ok,message},'*');
+addEventListener('message',async ev=>{const d=ev.data;if(!d||d.type!=='autouser-command')return;try{const e=document.querySelector(d.selector);if(!e)throw Error('Élément introuvable : '+d.selector);if(d.action==='type'){if(!('value'in e)&&!e.isContentEditable)throw Error('Cet élément ne permet pas la saisie.');if(e.isContentEditable)e.textContent=d.value;else e.value=d.value;e.dispatchEvent(new Event('input',{bubbles:true}));e.dispatchEvent(new Event('change',{bubbles:true}))}else if(d.action==='click'){if(e.disabled)throw Error('Élément désactivé.');e.click()}else if(d.action==='check'){const v=('value'in e)?e.value:(e.innerText||e.textContent||'');if(String(v).trim()!==String(d.value).trim())throw Error('Valeur différente : '+v)}else throw Error('Action inconnue');reply(d.id,true,'Action effectuée')}catch(err){reply(d.id,false,err.message)}});
+const start=()=>{scan();new MutationObserver(scan).observe(document.documentElement,{subtree:true,childList:true,attributes:true})};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start()})();
+<\/script>`}
+function importHtml(file){if(!file)return;if(file.size>2097152){toast('Fichier trop volumineux : limite de 2 Mo.');return}const reader=new FileReader();reader.onload=()=>{let source=String(reader.result||'');const boot=bootstrapScript();importedHtml=/<\/body\s*>/i.test(source)?source.replace(/<\/body\s*>/i,boot+'</body>'):source+boot;detected=[];$('html-preview').classList.remove('hidden');$('demo-preview').classList.add('hidden');$('html-preview').srcdoc=importedHtml;$('run-target').value='html';activeTarget='html';$('preview-title').textContent=file.name;$('html-status').textContent='Chargement et détection en cours…';$('detector-area').classList.remove('hidden');};reader.onerror=()=>toast('Lecture du fichier impossible.');reader.readAsText(file)}
+function showDetected(items){detected=items||[];$('detector-count').textContent=detected.length+' élément(s)';$('html-status').textContent=detected.length+' élément(s) interactif(s) détecté(s).';$('detected-elements').innerHTML=detected.map((x,i)=>`<div class="rounded-lg border border-slate-700 p-2 flex justify-between items-center gap-2"><div class="min-w-0"><div class="text-xs font-semibold truncate">${esc(x.label||x.tag)}</div><div class="text-[10px] muted truncate">${esc(x.tag)} · ${esc(x.selector)}</div></div><button class="btn text-xs use-target" data-index="${i}">Utiliser</button></div>`).join('')||'<p class="muted text-xs">Aucun élément interactif détecté.</p>';document.querySelectorAll('.use-target').forEach(b=>b.onclick=()=>{const x=detected[Number(b.dataset.index)];openScenario();$('scenario-title').value='Test de '+(x.label||x.tag);const c=$('step-editor').firstElementChild;if(c){c.querySelector('.step-target').value=x.selector;const a=(x.tag==='button'||x.tag==='a')?'click':'type';c.querySelector('.step-action').value=a;updateStepFields(c,{action:a,target:x.selector,value:''})}toast('Élément ajouté au scénario.')})}
+function commandInFrame(action,selector,value){return new Promise(resolve=>{const id=++bridgeSeq;const timer=setTimeout(()=>{bridgeWaiters.delete(id);resolve({ok:false,message:'La page ne répond pas. Elle a peut-être bloqué le script de test.'})},5000);bridgeWaiters.set(id,r=>{clearTimeout(timer);resolve(r)});$('html-preview').contentWindow.postMessage({type:'autouser-command',id,action,selector,value},'*')})}
+window.addEventListener('message',ev=>{if(ev.source!==$('html-preview').contentWindow)return;const d=ev.data;if(d?.type==='autouser-detected')showDetected(d.items);if(d?.type==='autouser-result'&&bridgeWaiters.has(d.id)){bridgeWaiters.get(d.id)(d);bridgeWaiters.delete(d.id)}});
+
+async function runTest(){if(isRunning)return;activeTarget=$('run-target').value;if(activeTarget==='html'&&!importedHtml){toast('Importe un fichier HTML avant de lancer le test.');return}const s=scenarios.find(x=>x.id===$('run-scenario').value),p=profiles.find(x=>x.id===$('run-profile').value);if(!s||!p){toast('Ajoute un scénario et un profil avant de lancer.');return}
+ isRunning=true;stopRequested=false;$('run-button').disabled=true;$('stop-button').disabled=false;$('logs').innerHTML='';$('demo-form').reset();$('demo-success').classList.add('hidden');let failed=0,completed=0;
+ log(`Début : ${s.title} avec ${p.name}`);
+ try{for(let i=0;i<s.steps.length;i++){if(stopRequested)break;const st=s.steps[i];log(`Étape ${i+1} : ${actionLabel(st.action)}`);
+  if(st.action==='wait'){await wait(st.ms||0);completed++;log(`Attente de ${st.ms||0} ms terminée.`, 'ok');continue}
+  if(activeTarget==='html'){
+   const res=await commandInFrame(st.action,st.target,resolveValue(st.value,p));
+   if(res.ok){completed++;log(res.message+' : '+st.target,'ok')}else{failed++;log(res.message,'bad')}
+  }else{
+   const el=document.querySelector(st.target);if(!el){failed++;log(`Élément introuvable : ${st.target}`,'bad');continue}
+   el.scrollIntoView({block:'center',behavior:'smooth'});el.classList.add('ring-2','ring-blue-400');await wait(250);
+   if(st.action==='type'){const value=resolveValue(st.value,p);el.value='';if(Number(p.speed)>0){for(const ch of value){if(stopRequested)break;el.value+=ch;await wait(Number(p.speed))}}else el.value=value;el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));if(!stopRequested){completed++;log(`Texte saisi dans ${st.target}`,'ok')}}
+   else if(st.action==='click'){if(el.disabled){failed++;log('Le bouton est désactivé.','bad')}else{el.click();completed++;log(`Clic sur ${st.target}`,'ok')}}
+   else if(st.action==='check'){const expected=resolveValue(st.value,p);if(String(el.value).trim()===expected.trim()){completed++;log(`Valeur vérifiée dans ${st.target}`,'ok')}else{failed++;log(`Valeur inattendue dans ${st.target}`,'bad')}}
+   el.classList.remove('ring-2','ring-blue-400');await wait(200);
+  }
+ }if(stopRequested)log('Test arrêté à la demande.');else log(`Terminé : ${completed} étape(s) réussie(s), ${failed} échec(s).`,failed?'bad':'ok');
+ }catch(err){failed++;log(`Erreur : ${err.message}`,'bad')}finally{document.querySelectorAll('.ring-2').forEach(e=>e.classList.remove('ring-2','ring-blue-400'));isRunning=false;$('run-button').disabled=false;$('stop-button').disabled=true;runs++;results.unshift({title:s.title,ok:!failed&&!stopRequested,date:new Date().toLocaleString('fr-FR')});persist();render()}}
+$('html-file').addEventListener('change',e=>importHtml(e.target.files?.[0]));
+$('clear-html').onclick=()=>{importedHtml='';detected=[];activeTarget='demo';$('run-target').value='demo';$('html-preview').srcdoc='';$('html-preview').classList.add('hidden');$('demo-preview').classList.remove('hidden');$('preview-title').textContent='Application de démonstration';$('html-status').textContent='Aucun fichier importé.';$('detector-area').classList.add('hidden');$('html-file').value=''};
+$('run-button').onclick=runTest;$('stop-button').onclick=()=>{stopRequested=true};$('clear-logs').onclick=()=>$('logs').innerHTML='<p>Journal effacé.</p>';
+$('demo-submit').onclick=()=>{const n=$('demo-name'),e=$('demo-email');if(!n.value.trim()||!e.value.trim()||!e.checkValidity()){toast('Envoi refusé : nom et adresse e-mail valide obligatoires.');$('demo-success').classList.add('hidden');return}$('demo-success').classList.remove('hidden')};
+$('scenario-modal').addEventListener('click',e=>{if(e.target===$('scenario-modal'))closeScenario()});$('profile-modal').addEventListener('click',e=>{if(e.target===$('profile-modal'))$('profile-modal').classList.add('hidden')});
+render();if(window.lucide)lucide.createIcons();
+</script>
+</body></html>
